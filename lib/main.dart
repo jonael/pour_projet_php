@@ -1,5 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:pour_projet_php/constants.dart';
+import 'package:pour_projet_php/task_api.dart';
+import 'package:pour_projet_php/tasks_page.dart';
+
+import 'models/user.dart';
 
 void main() {
   runApp(MyApp());
@@ -46,6 +53,56 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
   bool visibleError = false;
 
   String error = "";
+
+  List<User> utilisateurs = <User>[];
+
+  void loginApi(String login, String password) async {
+    visible = !visible;
+    TaskApi.login(login, password).then((response) {
+      setState(() {
+        if(response == true ) {
+          visible = !visible;
+          User user = userLog;
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return TasksPage(user: user);
+                  }
+              )
+          );
+        } else {
+          error = errorLog;
+          visible = !visible;
+          visibleError = !visibleError;
+        }
+      });
+    });
+  }
+
+  void registerApi( String login, String password, String name, String firstname,) async {
+    visible = !visible;
+    TaskApi.register(login, password, name, firstname, ).then((response) {
+      setState(() {
+        if(response == true) {
+          visible = !visible;
+          User user = userLog;
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return TasksPage(user: user);
+                  }
+              )
+          );
+        } else {
+          error = errorLog;
+          visible = !visible;
+          visibleError = !visibleError;
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,14 +242,15 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
             NeumorphicButton(
               margin: const EdgeInsets.all(10.0),
               onPressed: () {
-                String name = nameController.text.toString();
-                String firstname = firstNameController.text.toString();
-                String login = passwordController.text.toString();
+                String login = loginController.text.toString();
                 String password = passwordController.text.toString();
                 String confirmPassword = confirmPasswordController.text.toString();
-                logOrReg(name, firstname, login, password, confirmPassword);
+                String name = nameController.text.toString();
+                String firstname = firstNameController.text.toString();
+                logOrReg(login, password, confirmPassword, name, firstname,);
               },
               style: NeumorphicStyle(
+                shape: NeumorphicShape.concave,
                 color: Colors.black.withOpacity(0.1),
                 boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(15))
               ),
@@ -228,7 +286,13 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
     });
   }
 
-  void logOrReg(String login, String password, String confirmPass, String name , String firstName) {
+  void logOrReg( String login, String password, String confirmPass, String name , String firstName,) {
+    print(name);
+    print(firstName);
+    print(login);
+    print(password);
+    print(confirmPass);
+    print(onlyForCreate);
     if(onlyForCreate == true) {
       if(password == confirmPass) {
         if(login.isEmpty) {
@@ -257,7 +321,7 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
             error = "Veuillez renseigner un prénom";
           });
         } else {
-          print("je crée le compte");
+          registerApi( login, password, name, firstName,);
         }
       } else {
         setState(() {
@@ -266,7 +330,19 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
         });
       }
     } else {
-      print("je me log");
+      if(login.isEmpty) {
+        setState(() {
+          visibleError = !visibleError;
+          error = "Veuillez renseigner un login ou email";
+        });
+      } else if (password.isEmpty) {
+        setState(() {
+          visibleError = !visibleError;
+          error = "Veuillez renseigner un mot de passe";
+        });
+      } else {
+        loginApi(login, password);
+      }
     }
   }
 }
