@@ -1,36 +1,35 @@
-
 class Task {
-  int _idTask = 0;
+  int? _idTask;
   String? _nameTask;
   String? _contentTask;
-  String _dateTask = "";
-  int _validateTask = 0;
-  int _idUser = 0;
-  int _idCat = 0;
+  String? _dateTask;
+  int? _validateTask;
+  int? _idUser;
+  int? _idCat;
 
-  int get idTask => _idTask;
+  int? get idTask => _idTask;
   String? get nameTask => _nameTask;
   String? get contentTask => _contentTask;
-  String get dateTask => _dateTask;
-  int get validateTask => _validateTask;
-  int get idUser => _idUser;
-  int get idCat => _idCat;
+  String? get dateTask => _dateTask;
+  int? get validateTask => _validateTask;
+  int? get idUser => _idUser;
+  int? get idCat => _idCat;
 
   Task({
-      required int idTask,
+      int? idTask, 
       String? nameTask, 
-      String? contentTask,
-      required String dateTask,
-      required int validateTask,
-      required int idUser,
-      required int idCat}){
-    _idTask = this.idTask;
+      String? contentTask, 
+      String? dateTask, 
+      int? validateTask, 
+      int? idUser, 
+      int? idCat}){
+    _idTask = idTask;
     _nameTask = nameTask;
     _contentTask = contentTask;
     _dateTask = dateTask;
     _validateTask = validateTask;
-    _idUser = this.idUser;
-    _idCat = this.idCat;
+    _idUser = idUser;
+    _idCat = idCat;
 }
 
   Task.fromJson(dynamic json) {
@@ -54,5 +53,4 @@ class Task {
     map["id_cat"] = _idCat;
     return map;
   }
-
 }

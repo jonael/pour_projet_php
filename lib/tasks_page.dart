@@ -6,6 +6,7 @@ import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:pour_projet_php/constants.dart';
 import 'package:pour_projet_php/models/user.dart';
 import 'package:pour_projet_php/task_api.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 import 'models/cat.dart';
 import 'models/task.dart';
@@ -33,6 +34,8 @@ class _TasksPageState extends State<TasksPage> {
   DateTime initialDate = DateTime.now();
   late int idCat;
   String? catName = null;
+
+  DateTime? myDate;
 
   void addListItem() {
     listCats.clear();
@@ -90,7 +93,6 @@ class _TasksPageState extends State<TasksPage> {
 
   @override
   Widget build(BuildContext context) {
-    addListItem();
     return Scaffold(
       appBar: AppBar(
         title: const Text("tasks"),
@@ -100,6 +102,8 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget body() {
+    addListItem();
+    print(listCats);
     Size size = MediaQuery.of(context).size;
     return SingleChildScrollView(
       child: Center(
@@ -133,18 +137,27 @@ class _TasksPageState extends State<TasksPage> {
                     ),
                   ),
                   SizedBox(width: size.width * 0.01),
-                  Container(
-                    width: size.width * 0.65,
-                    child: TextFormField(
-                      controller: taskContentController,
-                      autocorrect: true,
-                      decoration: const InputDecoration(
-                        border: UnderlineInputBorder(),
-                        labelText: 'description tâche',
-                      ),
-                    ),
-                  ),
+                  choosePlatform(size),
                   SizedBox(width: size.width * 0.01),
+                  IconButton(
+                    color: Colors.lightBlue,
+                    hoverColor: Colors.purpleAccent,
+                    onPressed: () {
+                      showDatePicker(
+                        context: context,
+                        initialDate: initialDate,
+                        firstDate: initialDate,
+                        lastDate: DateTime(2030),
+                      ).then((value) => {
+                        if(value != null){
+                          myDate = value
+                        }
+                      });
+                    },
+                    icon: Icon(
+                      Icons.calendar_view_day_sharp,),
+                    tooltip: 'Choose date',
+                  ),
                 ],
               ),
             ),
@@ -202,43 +215,36 @@ class _TasksPageState extends State<TasksPage> {
               ),
             ),
             SizedBox(height: size.height * 0.03),*/
-            NeumorphicButton(
-              margin: const EdgeInsets.only(top: 10),
-              onPressed: () {
-                String name = taskNameController.text.toString();
-                String content = taskContentController.text.toString();
-                int idUser = widget.user.idUser;
-                DateTime? myDate;
-                showDatePicker(
-                  context: context,
-                  initialDate: initialDate,
-                  firstDate: initialDate,
-                  lastDate: DateTime(2030),
-                ).then((value) => {
-                  if(value != null){
-                    myDate = value
-                  }
-                });
-                String date = myDate as String;
-                cats.forEach((element) {
-                  if(element.name_cat == catName){
-                    idCat = element.id_cat;
-                  }
-                });
-                createTask(name, content, date, idUser, idCat);
-              },
-              style: NeumorphicStyle(
-                color: Colors.lightBlue,
-                shape: NeumorphicShape.concave,
-                boxShape:
-                NeumorphicBoxShape.roundRect(BorderRadius.circular(8)),
-              ),
-              child: const Text(
-                "Ajouter Tâche",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
+            Center(
+              child: Container(
+                child: NeumorphicButton(
+                  margin: const EdgeInsets.only(top: 10),
+                  onPressed: () {
+                    String name = taskNameController.text.toString();
+                    String content = taskContentController.text.toString();
+                    int idUser = widget.user.idUser;
+                    String date = myDate as String;
+                    cats.forEach((element) {
+                      if(element.name_cat == catName){
+                        idCat = element.id_cat;
+                      }
+                    });
+                    createTask(name, content, date, idUser, idCat);
+                  },
+                  style: NeumorphicStyle(
+                    color: Colors.lightBlue,
+                    shape: NeumorphicShape.concave,
+                    boxShape:
+                    NeumorphicBoxShape.roundRect(BorderRadius.circular(8)),
+                  ),
+                  child: const Text(
+                    "Ajouter Tâche",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.0,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -255,43 +261,7 @@ class _TasksPageState extends State<TasksPage> {
             Visibility(
               visible: visible,
               child: CircularProgressIndicator()),
-            ListView.builder(
-              padding: const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0),
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              itemCount: tasks.length,
-              itemBuilder: (context, i) {
-                return Row(
-                  children: [
-                    Container(
-                      width: size.width * 0.20,
-                      child: ListTile(
-                        title: Text(tasks[i].nameTask!),
-                      ),
-                    ),
-                    Container(
-                      width: size.width * 0.40,
-                      child: ListTile(
-                        title: Text(tasks[i].contentTask!),
-                      ),
-                    ),
-                    Container(
-                      width: size.width * 0.20,
-                      child: ListTile(
-                        title: Text(tasks[i].dateTask),
-                      ),
-                    ),
-                    Container(
-                      width: size.width * 0.10,
-                      child: NeumorphicCheckbox(
-                        value: checkValue(tasks[i].validateTask),
-                        onChanged: (value) { updateState(tasks[i]); },
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+            listBuilder(size),
             SizedBox(height: size.height * 0.01),
           ],
         ),
@@ -326,6 +296,160 @@ class _TasksPageState extends State<TasksPage> {
       return check = false;
     } else {
       return check = true;
+    }
+  }
+
+  Widget choosePlatform(Size size) {
+    if(UniversalPlatform.isDesktopOrWeb){
+      return Container(
+        width: size.width * 0.65,
+        child: TextFormField(
+          controller: taskContentController,
+          autocorrect: true,
+          decoration: const InputDecoration(
+            border: UnderlineInputBorder(),
+            labelText: 'description tâche',
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: size.width * 0.45,
+        child: TextFormField(
+          controller: taskContentController,
+          autocorrect: true,
+          decoration: const InputDecoration(
+            border: UnderlineInputBorder(),
+            labelText: 'description tâche',
+          ),
+        ),
+      );
+    }
+  }
+
+  listBuilder(Size size) {
+    if(UniversalPlatform.isWeb) {
+      return ListView.builder(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        itemCount: tasks.length,
+        itemBuilder: (context, i) {
+          return Container(
+            padding: const EdgeInsets.all(5.0),
+            child: Row(
+              children: [
+                Container(
+                  width: size.width * 0.15,
+                  child: ListTile(
+                    title: Text(
+                      tasks[i].nameTask!,
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: size.width * 0.50,
+                  child: ListTile(
+                    title: Text(
+                      tasks[i].contentTask!,
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: size.width * 0.20,
+                  child: ListTile(
+                    title: Text(
+                      tasks[i].dateTask!,
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: size.width * 0.05,
+                  child: NeumorphicCheckbox(
+                    value: checkValue(tasks[i].validateTask!),
+                    onChanged: (value) { updateState(tasks[i]); },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } else {
+      return ListView.builder(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        itemCount: tasks.length,
+        itemBuilder: (context, i) {
+          return Container(
+            padding: const EdgeInsets.all(5.0),
+            child: Row(
+              children: [
+                Container(
+                  width: size.width * 0.20,
+                  child: ListTile(
+                    title: Text(
+                      tasks[i].nameTask!,
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: size.width * 0.40,
+                  child: ListTile(
+                    title: Text(
+                      tasks[i].contentTask!,
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: size.width * 0.25,
+                  child: ListTile(
+                    title: Text(
+                      tasks[i].dateTask!,
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: size.width * 0.10,
+                  child: NeumorphicCheckbox(
+                    value: checkValue(tasks[i].validateTask!),
+                    onChanged: (value) { updateState(tasks[i]); },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
     }
   }
 }

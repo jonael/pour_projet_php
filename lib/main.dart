@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:pour_projet_php/constants.dart';
@@ -63,6 +62,7 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
         if(response == true ) {
           visible = !visible;
           User user = userLog;
+          print('connecté');
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -87,6 +87,7 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
         if(response == true) {
           visible = !visible;
           User user = userLog;
+          print('création compte');
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -118,9 +119,13 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
     Size size = MediaQuery.of(context).size;
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 10.0, left : 15.0, right : 15.0),
+        padding: const EdgeInsets.only(top: 10.0, left : 10.0, right : 10.0),
         child: Column(
           children: <Widget> [
+            Image.asset(
+              'logo.png',
+              fit: BoxFit.fill,
+            ),
             SizedBox(height: size.height * 0.02),
             NeumorphicText(
               updateTitlePage(),
@@ -300,22 +305,22 @@ class _MaPageAccueilState extends State<MaPageAccueil> {
             visibleError = !visibleError;
             error = "Veuillez renseigner un login ou email";
           });
-        } if(password.isEmpty) {
+        } else if(password.isEmpty) {
           setState(() {
             visibleError = !visibleError;
             error = "Veuillez renseigner un mot de passe";
           });
-        } if(confirmPass.isEmpty) {
+        } else if(confirmPass.isEmpty) {
           setState(() {
             visibleError = !visibleError;
             error = "Veuillez confirmer votre mot de passe";
           });
-        } if(name.isEmpty) {
+        } else if(name.isEmpty) {
           setState(() {
             visibleError = !visibleError;
             error = "Veuillez renseigner un nom";
           });
-        } if(firstName.isEmpty) {
+        } else if(firstName.isEmpty) {
           setState(() {
             visibleError = !visibleError;
             error = "Veuillez renseigner un prénom";

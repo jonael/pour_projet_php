@@ -53,7 +53,7 @@ class TaskApi {
       } else {
         print(response.body);
         print(response.statusCode);
-        errorLog = jsonDecode(response.body[0]);
+        errorLog = jsonDecode(response.body);
         return false;
       }
     } on Exception catch (e) {
@@ -133,9 +133,9 @@ class TaskApi {
     String url = '';
     String? nameTask = task.nameTask;
     String? contentTask = task.contentTask;
-    String dateTask = task.dateTask;
-    int validTask = task.validateTask;
-    int idUser = task.idUser;
+    String? dateTask = task.dateTask;
+    int? validTask = task.validateTask;
+    int? idUser = task.idUser;
 
     if(UniversalPlatform.isAndroid){
       url = "http://10.0.2.2/test/api/updateTask.php";
@@ -146,7 +146,7 @@ class TaskApi {
       body: jsonEncode(<String, String>{
         "name_task": nameTask!,
         "content_task": contentTask!,
-        "date_task": dateTask,
+        "date_task": dateTask!,
         "validate_task": validTask.toString(),
         "id_user": idUser.toString()
       }),
